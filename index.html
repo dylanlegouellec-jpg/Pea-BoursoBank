@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Calculateur PEA · BoursoBank Découverte</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+
+<style>
+:root {
+  --bg:       #070A0F;
+  --surf:     #0C1018;
+  --card:     #101620;
+  --bdr:      #1B2535;
+  --bdr2:     #243040;
+  --muted:    #374F66;
+  --dim:      #5A7A96;
+  --txt:      #B8CDE0;
+  --em:       #E0EDF8;
+  --green:    #00E07A;
+  --green2:   #00B862;
+  --red:      #FF3D50;
+  --amber:    #F0A000;
+  --blue:     #3B82F6;
+  --blue2:    #2563C8;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--txt);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── Background atmosphere ─────────────────────────────────────────── */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0;
+  background:
+    radial-gradient(ellipse 60% 40% at 15% 10%, rgba(0,224,122,.035) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 35% at 88% 85%, rgba(59,130,246,.03) 0%, transparent 55%);
+  pointer-events: none;
+}
+body::after {
+  content: '';
+  position: fixed; inset: 0; z-index: 0;
+  background-image:
+    linear-gradient(rgba(27,37,53,.55) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(27,37,53,.55) 1px, transparent 1px);
+  background-size: 36px 36px;
+  pointer-events: none;
+}
+
+.rel { position: relative; z-index: 1; }
+
+/* ── Typography ─────────────────────────────────────────────────────── */
+.mono { font-family: 'JetBrains Mono', monospace; }
+.label-xs {
+  font-size: .6rem; font-weight: 700;
+  letter-spacing: .14em; text-transform: uppercase;
+  color: var(--muted); font-family: 'JetBrains Mono', monospace;
+}
+
+/* ── Inputs ─────────────────────────────────────────────────────────── */
+.pea-input {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--bdr);
+  color: var(--em);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1rem;
+  padding: .75rem 3.2rem .75rem .9rem;
+  border-radius: 7px;
+  outline: none;
+  transition: border-color .2s, box-shadow .2s;
+  -moz-appearance: textfield;
+}
+.pea-input::-webkit-inner-spin-button,
+.pea-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+.pea-input::placeholder { color: var(--muted); font-size: .85rem; }
+.pea-input:focus {
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px rgba(0,224,122,.1), inset 0 0 12px rgba(0,224,122,.025);
+}
+.pea-input.active-field {
+  border-color: rgba(0,224,122,.4);
+  background: rgba(0,224,122,.015);
+}
+.input-unit {
+  position: absolute; right: .7rem; top: 50%; transform: translateY(-50%);
+  font-family: 'JetBrains Mono', monospace; font-size: .58rem; font-weight: 700;
+  color: var(--muted); letter-spacing: .1em; pointer-events: none;
+}
+
+/* ── OR divider ─────────────────────────────────────────────────────── */
+.or-divider {
+  display: flex; align-items: center; gap: .6rem; margin: .55rem 0;
+}
+.or-divider::before, .or-divider::after {
+  content: ''; flex: 1; height: 1px; background: var(--bdr);
+}
+.or-txt {
+  font-family: 'JetBrains Mono', monospace; font-size: .58rem;
+  font-weight: 700; color: var(--muted); letter-spacing: .12em;
+}
+
+/* ── Buttons ────────────────────────────────────────────────────────── */
+.btn-calc {
+  width: 100%; padding: .85rem;
+  background: linear-gradient(135deg, var(--green) 0%, var(--green2) 100%);
+  color: #030A06; font-family: 'DM Sans', sans-serif;
+  font-weight: 800; font-size: .85rem; letter-spacing: .07em;
+  text-transform: uppercase; border: none; border-radius: 7px; cursor: pointer;
+  box-shadow: 0 4px 20px rgba(0,224,122,.22);
+  transition: transform .15s, box-shadow .2s;
+}
+.btn-calc:hover { transform: translateY(-1px); box-shadow: 0 6px 28px rgba(0,224,122,.36); }
+.btn-calc:active { transform: none; }
+
+.btn-save {
+  width: 100%; padding: .8rem;
+  background: linear-gradient(135deg, rgba(59,130,246,.85), rgba(37,99,200,.85));
+  color: var(--em); font-family: 'DM Sans', sans-serif;
+  font-weight: 700; font-size: .82rem; letter-spacing: .05em;
+  text-transform: uppercase; border: none; border-radius: 7px; cursor: pointer;
+  box-shadow: 0 4px 18px rgba(59,130,246,.22);
+  transition: transform .15s, box-shadow .2s, opacity .2s;
+  border: 1px solid rgba(59,130,246,.35);
+}
+.btn-save:hover { transform: translateY(-1px); box-shadow: 0 6px 22px rgba(59,130,246,.4); }
+.btn-save:active { transform: none; }
+.btn-save:disabled { opacity: .5; cursor: default; transform: none; }
+
+/* ── Cards ──────────────────────────────────────────────────────────── */
+.card {
+  background: var(--card);
+  border: 1px solid var(--bdr);
+  border-radius: 10px;
+}
+.card-pad { padding: 1.25rem 1.3rem; }
+
+/* ── Stat chips ─────────────────────────────────────────────────────── */
+.stat-chip {
+  background: var(--surf);
+  border: 1px solid var(--bdr);
+  border-radius: 8px;
+  padding: .8rem 1rem;
+  transition: border-color .2s;
+}
+.stat-chip:hover { border-color: var(--bdr2); }
+
+/* ── Strategy comparison cards ──────────────────────────────────────── */
+.strat-card {
+  border-radius: 7px; padding: .7rem .8rem; flex: 1; min-width: 0;
+  position: relative; text-align: center;
+  border: 1px solid var(--bdr); background: var(--surf);
+  transition: border-color .2s;
+}
+.strat-card.is-best {
+  background: rgba(0,224,122,.04);
+  border-color: rgba(0,224,122,.3);
+}
+.best-crown {
+  position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+  background: var(--green); color: #020D06;
+  font-family: 'JetBrains Mono', monospace; font-size: .52rem; font-weight: 700;
+  padding: 2px 9px; border-radius: 0 0 5px 5px;
+  letter-spacing: .08em; text-transform: uppercase; white-space: nowrap;
+}
+
+/* ── Verdict ────────────────────────────────────────────────────────── */
+.verdict-green {
+  background: linear-gradient(135deg, rgba(0,224,122,.08), rgba(0,224,122,.03));
+  border: 1px solid rgba(0,224,122,.28);
+  animation: pulseG 3.5s ease-in-out infinite;
+}
+.verdict-red {
+  background: linear-gradient(135deg, rgba(255,61,80,.08), rgba(255,61,80,.03));
+  border: 1px solid rgba(255,61,80,.25);
+}
+
+/* ── Order rows ─────────────────────────────────────────────────────── */
+.order-row {
+  background: var(--surf);
+  border: 1px solid var(--bdr);
+  border-radius: 6px;
+  padding: .75rem .9rem;
+  display: flex; align-items: center; gap: .65rem;
+  transition: border-color .15s, background .15s;
+  animation: slideUp .3s ease both;
+}
+.order-row:hover {
+  border-color: rgba(0,224,122,.2);
+  background: rgba(0,224,122,.02);
+}
+.order-row.row-over {
+  border-color: rgba(240,160,0,.2);
+}
+.order-row.row-over:hover {
+  border-color: rgba(240,160,0,.38);
+  background: rgba(240,160,0,.02);
+}
+
+/* ── Badges ─────────────────────────────────────────────────────────── */
+.badge {
+  font-family: 'JetBrains Mono', monospace; font-size: .58rem;
+  font-weight: 700; padding: 2px 7px; border-radius: 3px;
+  letter-spacing: .06em; text-transform: uppercase; flex-shrink: 0;
+}
+.badge-g { background: rgba(0,224,122,.12); color: var(--green); }
+.badge-a { background: rgba(240,160,0,.12); color: var(--amber); }
+
+/* ── Pill labels ────────────────────────────────────────────────────── */
+.pill {
+  display: inline-block; font-family: 'JetBrains Mono', monospace;
+  font-size: .56rem; font-weight: 700; padding: 2px 7px; border-radius: 3px;
+  letter-spacing: .05em; text-transform: uppercase; white-space: nowrap;
+}
+.pill-unique { background: rgba(90,122,150,.12); color: var(--dim); }
+.pill-std    { background: rgba(99,102,241,.12); color: #818CF8; }
+.pill-eq     { background: rgba(0,224,122,.12); color: var(--green); }
+
+/* ── Journal ────────────────────────────────────────────────────────── */
+.j-card {
+  background: var(--card);
+  border: 1px solid rgba(59,130,246,.18);
+  border-radius: 12px; overflow: hidden;
+}
+.j-header {
+  background: linear-gradient(135deg, rgba(37,99,200,.07), rgba(37,99,200,.02));
+  border-bottom: 1px solid rgba(59,130,246,.18);
+  padding: 1.2rem 1.4rem;
+}
+.savings-big {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.6rem; font-weight: 700; color: var(--green); line-height: 1;
+}
+.j-table { width: 100%; border-collapse: collapse; min-width: 520px; }
+.j-table th {
+  font-family: 'JetBrains Mono', monospace; font-size: .55rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .1em; color: var(--muted);
+  padding: .55rem .9rem; text-align: left;
+  border-bottom: 1px solid var(--bdr); background: rgba(7,10,15,.6);
+  white-space: nowrap;
+}
+.j-table td {
+  padding: .6rem .9rem; border-bottom: 1px solid rgba(27,37,53,.6);
+  vertical-align: middle;
+}
+.j-table tbody tr:last-child td { border-bottom: none; }
+.j-table tbody tr { transition: background .15s; animation: slideUp .3s ease both; }
+.j-table tbody tr:hover { background: rgba(255,255,255,.015); }
+
+.btn-del {
+  background: transparent; border: 1px solid rgba(255,61,80,.2);
+  color: rgba(255,61,80,.6); border-radius: 4px; padding: 3px 7px;
+  font-size: .7rem; cursor: pointer; transition: all .15s; line-height: 1;
+}
+.btn-del:hover { background: rgba(255,61,80,.1); border-color: rgba(255,61,80,.45); color: var(--red); }
+
+/* ── Progress bars ──────────────────────────────────────────────────── */
+.pbar { height: 3px; border-radius: 2px; background: var(--bdr); overflow: hidden; }
+.pbar-fill { height: 100%; border-radius: 2px; transition: width .7s cubic-bezier(.34,1.56,.64,1); }
+
+/* ── Misc ───────────────────────────────────────────────────────────── */
+.hline {
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--green) 40%, var(--green) 60%, transparent);
+  opacity: .45; margin-bottom: 1.2rem;
+}
+.sep { height: 1px; background: linear-gradient(90deg, transparent, var(--bdr) 30%, var(--bdr) 70%, transparent); }
+.gain-display { font-family: 'JetBrains Mono', monospace; font-size: 2rem; font-weight: 700; line-height: 1; }
+.chip {
+  font-family: 'JetBrains Mono', monospace; font-size: .58rem;
+  background: var(--card); border: 1px solid var(--bdr);
+  color: var(--dim); padding: 3px 10px; border-radius: 100px;
+  display: inline-block;
+}
+
+/* ── Animations ─────────────────────────────────────────────────────── */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(9px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulseG {
+  0%,100% { box-shadow: 0 0 30px rgba(0,224,122,.06), inset 0 1px 0 rgba(0,224,122,.1); }
+  50%      { box-shadow: 0 0 55px rgba(0,224,122,.13), inset 0 1px 0 rgba(0,224,122,.16); }
+}
+
+.fade-up { animation: fadeUp .45s ease both; }
+
+/* ── Scrollbar ──────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--surf); }
+::-webkit-scrollbar-thumb { background: var(--bdr); border-radius: 10px; }
+
+/* ── Utilities ──────────────────────────────────────────────────────── */
+.hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div class="rel" style="min-height:100vh; padding: 2rem 1rem 5rem; display:flex; justify-content:center;">
+<div style="width:100%; max-width:660px; display:flex; flex-direction:column; gap:1.4rem;">
+
+<!-- ═══════════════════════════════════════ HEADER ═══════════ -->
+<header class="fade-up">
+  <div class="hline"></div>
+  <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:1rem;">
+    <div>
+      <div style="display:flex; gap:.4rem; margin-bottom:.4rem; flex-wrap:wrap;">
+        <span class="chip">PEA · BOURSOBANK</span>
+        <span class="chip">DÉCOUVERTE</span>
+      </div>
+      <h1 style="font-size:clamp(1.5rem,5vw,2.1rem); font-weight:800; color:var(--em); letter-spacing:-.02em; line-height:1.15;">
+        Calculateur<br><span style="color:var(--green);">d'Ordres Intelligent</span>
+      </h1>
+    </div>
+    <div style="text-align:right; flex-shrink:0; padding-top:.2rem;">
+      <div class="label-xs" style="margin-bottom:.35rem;">Tarif PEA</div>
+      <div class="mono" style="font-size:.68rem; line-height:1.9; color:var(--dim);">
+        ≤&nbsp;500&nbsp;€ → <span style="color:var(--txt);">1,99&nbsp;€</span><br>
+        >&nbsp;500&nbsp;€ → <span style="color:var(--txt);">0,50&nbsp;%</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════ INPUT CARD ═══════════ -->
+<div class="card card-pad fade-up" style="animation-delay:.07s;">
+
+  <div class="label-xs" style="margin-bottom:1.1rem;">Paramètres de l'ordre</div>
+
+  <!-- Prix -->
+  <div style="margin-bottom:.95rem;">
+    <label style="display:block; font-size:.78rem; font-weight:600; color:#7A9AB8; margin-bottom:.38rem;">
+      Prix de l'action / ETF <span style="color:var(--muted); font-weight:400;">(EUR)</span>
+    </label>
+    <div style="position:relative;">
+      <input type="number" id="prix" class="pea-input" placeholder="Ex : 36,00" min="0.01" step="0.01" oninput="onPrixChange()"/>
+      <span class="input-unit">EUR</span>
+    </div>
+  </div>
+
+  <div class="sep" style="margin: 1rem 0 .9rem;"></div>
+  <div class="label-xs" style="margin-bottom:.75rem;">
+    Objectif d'investissement &nbsp;<span style="color:var(--bdr2); letter-spacing:.06em;">— saisir [A] ou [B]</span>
+  </div>
+
+  <!-- [A] Montant -->
+  <div style="margin-bottom:.1rem;">
+    <label style="display:block; font-size:.78rem; font-weight:600; color:#7A9AB8; margin-bottom:.38rem;">
+      <span class="mono" style="font-size:.6rem; font-weight:700; color:var(--muted); margin-right:.3rem;">[A]</span>
+      Somme maximale à investir <span style="color:var(--muted); font-weight:400;">(EUR)</span>
+    </label>
+    <div style="position:relative;">
+      <input type="number" id="input-montant" class="pea-input" placeholder="Ex : 1 050,00" min="0.01" step="0.01" oninput="onMontantInput()"/>
+      <span class="input-unit">EUR</span>
+    </div>
+  </div>
+
+  <!-- OR -->
+  <div class="or-divider"><span class="or-txt">OU</span></div>
+
+  <!-- [B] Quantité -->
+  <div style="margin-bottom:.2rem;">
+    <label style="display:block; font-size:.78rem; font-weight:600; color:#7A9AB8; margin-bottom:.38rem;">
+      <span class="mono" style="font-size:.6rem; font-weight:700; color:var(--muted); margin-right:.3rem;">[B]</span>
+      Quantité totale de titres souhaitée
+    </label>
+    <div style="position:relative;">
+      <input type="number" id="input-qte" class="pea-input" placeholder="Ex : 27" min="1" step="1" oninput="onQteInput()"/>
+      <span class="input-unit">TITRES</span>
+    </div>
+  </div>
+
+  <button class="btn-calc" style="margin-top:1.1rem;" onclick="calculate()">
+    ⟶ &nbsp;Calculer la stratégie optimale
+  </button>
+</div>
+
+<!-- ═════════════════════════════════════ ERROR ══════════════ -->
+<div id="err-zone" class="hidden" style="background:rgba(255,61,80,.07); border:1px solid rgba(255,61,80,.22); border-radius:8px; padding:.75rem 1rem;">
+  <p id="err-msg" style="font-size:.82rem; font-weight:600; color:var(--red);"></p>
+</div>
+
+<!-- ═══════════════════════════════════ RESULTS ══════════════ -->
+<div id="results" class="hidden" style="display:flex; flex-direction:column; gap:1.1rem;">
+
+  <!-- Stats row -->
+  <div id="stats-row" style="display:grid; grid-template-columns:1fr 1fr; gap:.6rem;"></div>
+
+  <!-- Fees progress bars -->
+  <div id="fees-bar" class="hidden card card-pad">
+    <div class="label-xs" style="margin-bottom:.75rem;">Comparaison des frais</div>
+    <div style="display:flex; flex-direction:column; gap:.7rem;">
+      <div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:.3rem;">
+          <span style="font-size:.72rem; color:var(--dim);">Ordre unique</span>
+          <span id="bar-lbl1" class="mono" style="font-size:.72rem; color:var(--red);"></span>
+        </div>
+        <div class="pbar"><div id="bar-fill1" class="pbar-fill" style="background:var(--red); width:0%;"></div></div>
+      </div>
+      <div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:.3rem;">
+          <span style="font-size:.72rem; color:var(--dim);" id="bar-lbl2-name">Stratégie optimale</span>
+          <span id="bar-lbl2" class="mono" style="font-size:.72rem; color:var(--green);"></span>
+        </div>
+        <div class="pbar"><div id="bar-fill2" class="pbar-fill" style="background:var(--green); width:0%;"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Strategy comparison (3-way) -->
+  <div id="strat-cmp" class="hidden">
+    <div class="label-xs" style="margin-bottom:.6rem;">Analyse des 3 stratégies</div>
+    <div style="display:flex; gap:.5rem; padding-top:.65rem;" id="strat-cards"></div>
+  </div>
+
+  <!-- Verdict -->
+  <div id="verdict-banner" style="border-radius:12px; padding:1.2rem 1.4rem;">
+    <div style="display:flex; align-items:center; gap:.8rem; margin-bottom:.45rem;">
+      <span id="v-icon" style="font-size:1.3rem;"></span>
+      <div>
+        <div id="v-label" class="label-xs" style="margin-bottom:.15rem;"></div>
+        <div id="v-title" style="font-size:1.15rem; font-weight:800; color:var(--em); line-height:1.25;"></div>
+      </div>
+    </div>
+    <p id="v-sub" style="font-size:.78rem; color:#7A9AB8; margin-left:2.5rem; line-height:1.55;"></p>
+    <div id="v-gain-zone" class="hidden" style="margin-top:.9rem; padding-top:.9rem; border-top:1px solid rgba(255,255,255,.07);">
+      <div class="label-xs" style="margin-bottom:.35rem;">Économie réalisée</div>
+      <div id="v-gain-num" class="gain-display"></div>
+      <div id="v-gain-pct" style="font-size:.74rem; color:var(--dim); margin-top:.2rem;"></div>
+    </div>
+  </div>
+
+  <!-- Save button -->
+  <button id="btn-save" class="btn-save hidden" onclick="saveToJournal()">
+    💾 &nbsp;Enregistrer dans le Journal
+  </button>
+
+  <!-- Trading plan -->
+  <div class="card" style="overflow:hidden;">
+    <div style="border-bottom:1px solid var(--bdr); padding:.9rem 1.1rem; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:.6rem;">
+      <div>
+        <div class="label-xs" style="margin-bottom:.2rem;">Plan de trading</div>
+        <div style="font-size:.88rem; font-weight:700; color:var(--em);">Clics à effectuer sur BoursoBank</div>
+        <div id="plan-strat-label" style="font-size:.7rem; color:var(--dim); margin-top:.15rem;"></div>
+      </div>
+      <div style="background:var(--surf); border:1px solid var(--bdr); border-radius:7px; padding:.35rem .8rem; text-align:center; min-width:52px;">
+        <div id="plan-nb" class="mono" style="font-size:1.4rem; font-weight:700; color:var(--green); line-height:1;"></div>
+        <div style="font-size:.56rem; color:var(--muted); margin-top:1px; letter-spacing:.06em; text-transform:uppercase;">ordres</div>
+      </div>
+    </div>
+    <div id="orders-list" style="padding:.85rem; display:flex; flex-direction:column; gap:.5rem;"></div>
+    <div id="plan-total" style="border-top:1px solid var(--bdr); padding:.75rem 1.1rem; background:rgba(7,10,15,.5);"></div>
+  </div>
+
+  <!-- Legal note -->
+  <div style="padding:.75rem 1rem; background:rgba(240,160,0,.04); border:1px solid rgba(240,160,0,.12); border-radius:7px;">
+    <p style="font-size:.68rem; color:#7A9AB8; line-height:1.6;">
+      <span style="color:var(--amber); font-weight:700;">ℹ Loi PACTE</span> — Frais plafonnés à 0,50 % / ordre sur PEA. Seuil forfaitaire 1,99 € pour les montants ≤ 500 €. Calculs indicatifs basés sur les tarifs BoursoBank Découverte.
+    </p>
+  </div>
+
+</div><!-- /results -->
+
+<!-- ════════════════════════════════════ JOURNAL ══════════════ -->
+<section class="fade-up" style="animation-delay:.13s;">
+  <div class="j-card">
+
+    <!-- Journal header -->
+    <div class="j-header">
+      <div style="display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:.75rem;">
+        <div>
+          <div class="label-xs" style="color:#2A4A72; margin-bottom:.3rem;">Historique d'optimisation</div>
+          <div style="font-size:1rem; font-weight:700; color:var(--em);">📊 Mon Journal de Trading</div>
+        </div>
+        <div style="text-align:right;">
+          <div class="label-xs" style="color:#2A4A72; margin-bottom:.25rem;">💰 Économies totales</div>
+          <div class="savings-big" id="total-savings">0,00 €</div>
+          <div style="font-size:.65rem; color:var(--muted); margin-top:.15rem;" id="nb-entries-label">0 simulation enregistrée</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty state -->
+    <div id="j-empty" style="padding:2.8rem 1.5rem; text-align:center;">
+      <div style="font-size:2rem; margin-bottom:.5rem; opacity:.35;">📭</div>
+      <div style="font-size:.85rem; font-weight:600; color:var(--muted); margin-bottom:.25rem;">Aucune simulation enregistrée</div>
+      <div style="font-size:.73rem; color:var(--bdr2); line-height:1.6;">Calculez une stratégie puis cliquez sur<br>« Enregistrer dans le Journal » pour traquer vos économies.</div>
+    </div>
+
+    <!-- Table -->
+    <div id="j-table-wrap" class="hidden" style="overflow-x:auto;">
+      <table class="j-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Prix unitaire</th>
+            <th>Quantité</th>
+            <th>Stratégie retenue</th>
+            <th>Frais bruts</th>
+            <th>Frais optimisés</th>
+            <th style="color:var(--green);">Économie</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="j-tbody"></tbody>
+      </table>
+    </div>
+
+    <!-- Footer -->
+    <div id="j-footer" class="hidden" style="border-top:1px solid rgba(27,37,53,.7); padding:.5rem 1.2rem; display:flex; justify-content:flex-end;">
+      <button class="mono" onclick="clearJournal()"
+        style="font-size:.64rem; background:transparent; border:none; color:var(--muted); cursor:pointer; transition:color .15s; padding:0; letter-spacing:.06em;"
+        onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--muted)'">
+        ✕ &nbsp;Tout effacer
+      </button>
+    </div>
+
+  </div>
+</section>
+
+</div><!-- /max-width -->
+</div><!-- /outer -->
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+//  CONSTANTS & STATE
+// ═══════════════════════════════════════════════════════════════
+const SEUIL     = 500;
+const F_FORFAIT = 1.99;
+const T_VAR     = 0.005;
+const GAIN_MIN  = 0.20;
+
+// ── Journal persistant ────────────────────────────────────────
+// Chargé une seule fois au démarrage depuis le localStorage.
+// Toute modification doit être suivie d'un appel à persistJournal().
+let journal    = JSON.parse(localStorage.getItem('pea_journal')) || [];
+let currentSim = null;
+let lastField  = null; // 'montant' | 'qte'
+
+/** Écrase le localStorage avec l'état actuel du tableau journal. */
+function persistJournal() {
+  localStorage.setItem('pea_journal', JSON.stringify(journal));
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  UTILS
+// ═══════════════════════════════════════════════════════════════
+const $ = id => document.getElementById(id);
+const fmtN   = (n, d=2) => Number(n).toFixed(d).replace('.', ',');
+const fmtEur = n => fmtN(n) + ' €';
+const fraisOf = m => m <= SEUIL ? F_FORFAIT : m * T_VAR;
+
+function showEl(id)  { const el = $(id); if(el) { el.classList.remove('hidden'); el.style.display = ''; } }
+function hideEl(id)  { const el = $(id); if(el) el.classList.add('hidden'); }
+function showFlex(id){ const el = $(id); if(el) { el.classList.remove('hidden'); el.style.display = 'flex'; } }
+
+// ═══════════════════════════════════════════════════════════════
+//  BIDIRECTIONAL SYNC
+// ═══════════════════════════════════════════════════════════════
+function onMontantInput() {
+  lastField = 'montant';
+  syncFields();
+  highlightField('input-montant');
+}
+function onQteInput() {
+  lastField = 'qte';
+  syncFields();
+  highlightField('input-qte');
+}
+function onPrixChange() {
+  if (lastField) syncFields();
+}
+
+function syncFields() {
+  const prix = parseFloat($('prix').value);
+  if (!prix || prix <= 0) return;
+
+  if (lastField === 'montant') {
+    const m = parseFloat($('input-montant').value);
+    $('input-qte').value = (m > 0) ? (Math.floor(m / prix) || '') : '';
+  } else if (lastField === 'qte') {
+    const q = parseInt($('input-qte').value);
+    $('input-montant').value = (q > 0) ? (q * prix).toFixed(2) : '';
+  }
+}
+
+function highlightField(activeId) {
+  ['input-montant','input-qte'].forEach(id => {
+    $(id).classList.toggle('active-field', id === activeId);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  ALGORITHM — 3-WAY OPTIMIZER
+// ═══════════════════════════════════════════════════════════════
+function buildStrategyUnique(qteTotal, prix) {
+  const m = qteTotal * prix;
+  const f = fraisOf(m);
+  return {
+    id: 'unique', label: 'Ordre unique', frais: f,
+    orders: [{ qte: qteTotal, montant: m, frais: f, prix, type: 'unique' }]
+  };
+}
+
+function buildStrategyStandard(qteTotal, prix) {
+  const qteBloc = Math.floor(SEUIL / prix);
+  if (qteBloc === 0) return null; // prix > 500, impossible
+
+  const mBloc        = qteBloc * prix;
+  const nbPleins     = Math.floor(qteTotal / qteBloc);
+  const reliquat     = qteTotal % qteBloc;
+
+  // Edge: tout tient dans un bloc ou moins
+  if (nbPleins === 0) {
+    const m = qteTotal * prix;
+    const f = fraisOf(m);
+    return {
+      id: 'standard', label: 'Blocs ≤ 500 €', frais: f,
+      orders: [{ qte: qteTotal, montant: m, frais: f, prix, type: 'normal' }]
+    };
+  }
+
+  let orders = [], frais = 0;
+  const fBloc = fraisOf(mBloc);
+  for (let i = 0; i < nbPleins; i++) {
+    orders.push({ qte: qteBloc, montant: mBloc, frais: fBloc, prix, type: 'normal' });
+    frais += fBloc;
+  }
+  if (reliquat > 0) {
+    const mRel = reliquat * prix;
+    const fRel = fraisOf(mRel);
+    orders.push({ qte: reliquat, montant: mRel, frais: fRel, prix, type: 'reliquat' });
+    frais += fRel;
+  }
+  return { id: 'standard', label: 'Blocs ≤ 500 €', frais, orders };
+}
+
+function buildStrategyEquilibre(qteTotal, prix) {
+  const qteBloc  = Math.floor(SEUIL / prix);
+  if (qteBloc === 0) return null;
+  const nbPleins = Math.floor(qteTotal / qteBloc);
+  const reliquat = qteTotal % qteBloc;
+
+  if (nbPleins === 0 || reliquat === 0) return null; // rien à équilibrer
+
+  // Répartir le reliquat dans les blocs existants
+  const extra   = Math.floor(reliquat / nbPleins);
+  const surplus = reliquat % nbPleins;
+
+  let orders = [], frais = 0;
+  for (let i = 0; i < nbPleins; i++) {
+    const qte    = qteBloc + extra + (i < surplus ? 1 : 0);
+    const montant = qte * prix;
+    const f       = fraisOf(montant);
+    const type    = montant > SEUIL ? 'over' : 'normal';
+    orders.push({ qte, montant, frais: f, prix, type });
+    frais += f;
+  }
+  return { id: 'equilibre', label: 'Blocs équilibrés', frais, orders };
+}
+
+function computeBest(prix, qteTotal) {
+  const s1 = buildStrategyUnique(qteTotal, prix);
+  const s2 = buildStrategyStandard(qteTotal, prix);
+  const s3 = buildStrategyEquilibre(qteTotal, prix);
+
+  const candidates = [s1, s2, s3].filter(Boolean);
+  // Pick minimum frais; ties go to fewer orders
+  const best = candidates.reduce((a, b) => {
+    const diff = b.frais - a.frais;
+    if (Math.abs(diff) < 0.001) return a.orders.length <= b.orders.length ? a : b;
+    return diff < 0 ? b : a;
+  });
+
+  return { s1, s2, s3, best, candidates };
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  ERROR
+// ═══════════════════════════════════════════════════════════════
+function showErr(msg) {
+  $('err-msg').textContent = msg;
+  showEl('err-zone');
+}
+function hideErr() { hideEl('err-zone'); }
+
+// ═══════════════════════════════════════════════════════════════
+//  MAIN CALCULATE
+// ═══════════════════════════════════════════════════════════════
+function calculate() {
+  hideErr();
+  hideEl('results');
+  hideEl('btn-save');
+  currentSim = null;
+
+  const prix    = parseFloat($('prix').value);
+  const montant = parseFloat($('input-montant').value);
+  const qteRaw  = parseInt($('input-qte').value);
+
+  // Validate prix
+  if (!prix || prix <= 0) { showErr('⚠  Entrez un prix d\'action valide (> 0 €).'); return; }
+
+  // Resolve qteTotal
+  let qteTotal;
+  if (montant > 0) {
+    qteTotal = Math.floor(montant / prix);
+  } else if (qteRaw > 0) {
+    qteTotal = qteRaw;
+  } else {
+    showErr('⚠  Remplissez le champ [A] (montant) ou [B] (quantité totale).'); return;
+  }
+  if (qteTotal <= 0) { showErr('⚠  Budget insuffisant pour acheter au moins 1 titre à ce prix.'); return; }
+
+  const mGlobal         = qteTotal * prix;
+  const { s1, s2, s3, best } = computeBest(prix, qteTotal);
+
+  const gain       = s1.frais - best.frais;
+  const isRentable = (best.id !== 'unique') && (gain >= GAIN_MIN);
+  const displayed  = isRentable ? best : s1;
+
+  renderStats(qteTotal, mGlobal, s1.frais, displayed.frais);
+  renderFeesBar(s1.frais, displayed.frais, displayed.label);
+  renderStratCmp(s1, s2, s3, best.id);
+  renderVerdict(isRentable, gain, s1, displayed);
+  renderPlan(displayed);
+
+  currentSim = {
+    id:             Date.now(),
+    date:           new Date().toLocaleDateString('fr-FR'),
+    prix,
+    qteTotal,
+    montantInvesti: mGlobal,
+    strategie:      displayed.label,
+    stratId:        displayed.id,
+    fraisUnique:    s1.frais,
+    fraisOptimises: displayed.frais,
+    gain:           isRentable ? Math.round(gain * 100000) / 100000 : 0
+  };
+
+  const results = $('results');
+  results.classList.remove('hidden');
+  results.style.display = 'flex';
+  results.style.animation = 'none';
+  void results.offsetWidth;
+  results.style.animation = 'fadeUp .4s ease both';
+
+  showEl('btn-save');
+  setTimeout(() => results.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  RENDER — Stats
+// ═══════════════════════════════════════════════════════════════
+function renderStats(qte, montant, fraisUnique, fraisOpt) {
+  const items = [
+    { label: 'Titres achetables', val: `${qte} titres`,       color: 'var(--em)' },
+    { label: 'Montant investi',   val: fmtEur(montant),        color: 'var(--em)' },
+    { label: 'Frais ordre unique',val: fmtEur(fraisUnique),    color: 'var(--red)' },
+    { label: 'Frais optimisés',   val: fmtEur(fraisOpt),       color: 'var(--green)' },
+  ];
+  $('stats-row').innerHTML = items.map(s => `
+    <div class="stat-chip">
+      <div class="label-xs" style="margin-bottom:.5rem;">${s.label}</div>
+      <div class="mono" style="font-size:.95rem; font-weight:700; color:${s.color};">${s.val}</div>
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  RENDER — Fees bar
+// ═══════════════════════════════════════════════════════════════
+function renderFeesBar(f1, f2, label2) {
+  if (f1 <= F_FORFAIT && f2 <= F_FORFAIT) { hideEl('fees-bar'); return; }
+  showEl('fees-bar');
+  const max = Math.max(f1, f2, 0.01);
+  $('bar-lbl1').textContent  = fmtEur(f1);
+  $('bar-lbl2').textContent  = fmtEur(f2);
+  $('bar-lbl2-name').textContent = label2;
+  setTimeout(() => {
+    $('bar-fill1').style.width = (f1 / max * 100) + '%';
+    $('bar-fill2').style.width = (f2 / max * 100) + '%';
+  }, 80);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  RENDER — Strategy comparison
+// ═══════════════════════════════════════════════════════════════
+function renderStratCmp(s1, s2, s3, bestId) {
+  const strategies = [s1, s2, s3].filter(Boolean);
+  if (strategies.length <= 1) { hideEl('strat-cmp'); return; }
+
+  const minFrais = Math.min(...strategies.map(s => s.frais));
+
+  $('strat-cards').innerHTML = strategies.map(s => {
+    const isBest = s.id === bestId;
+    const saving = s1.frais - s.frais;
+    const pillClass = { unique:'pill-unique', standard:'pill-std', equilibre:'pill-eq' }[s.id] || '';
+    return `
+      <div class="strat-card ${isBest ? 'is-best' : ''}" style="animation:fadeUp .35s ease both;">
+        ${isBest ? '<div class="best-crown">✦ Meilleure</div>' : ''}
+        <div class="label-xs" style="margin-bottom:.3rem; ${isBest ? 'color:var(--green);' : ''}">${s.label}</div>
+        <div class="mono" style="font-size:1.05rem; font-weight:700; color:${isBest ? 'var(--green)' : 'var(--txt)'}; margin-bottom:.2rem;">${fmtEur(s.frais)}</div>
+        <div class="mono" style="font-size:.62rem; color:var(--muted);">${s.orders.length} ordre${s.orders.length > 1 ? 's' : ''}</div>
+        ${saving > 0.001 ? `<div class="mono" style="font-size:.62rem; color:var(--green); margin-top:.25rem;">−${fmtEur(saving)}</div>` : ''}
+      </div>`;
+  }).join('');
+  showEl('strat-cmp');
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  RENDER — Verdict
+// ═══════════════════════════════════════════════════════════════
+function renderVerdict(isRentable, gain, s1, displayed) {
+  const banner = $('verdict-banner');
+  banner.className = isRentable ? 'verdict-green' : 'verdict-red';
+  banner.style.cssText = 'border-radius:12px; padding:1.2rem 1.4rem;';
+
+  if (isRentable) {
+    $('v-icon').textContent  = '✦';
+    $('v-label').textContent = 'Stratégie optimale identifiée';
+    $('v-label').style.color = 'var(--green)';
+    $('v-title').textContent = 'Découpage recommandé !';
+    $('v-sub').textContent   = `La stratégie "${displayed.label}" vous économise des frais réels par rapport à un ordre unique.`;
+    showEl('v-gain-zone');
+    $('v-gain-num').style.color   = 'var(--green)';
+    $('v-gain-num').textContent   = '− ' + fmtEur(gain);
+    $('v-gain-pct').textContent   = 'soit ' + fmtN((gain / s1.frais) * 100, 1) + ' % de réduction sur les frais totaux';
+  } else {
+    $('v-icon').textContent  = '◆';
+    $('v-label').textContent = 'Pas rentable';
+    $('v-label').style.color = 'var(--red)';
+    $('v-title').textContent = 'Passez 1 seul ordre global';
+    if (gain > 0 && gain < GAIN_MIN) {
+      $('v-sub').textContent = `Le gain potentiel (${fmtEur(gain)}) est inférieur à 0,20 € — pas assez pour multiplier les ordres.`;
+    } else {
+      $('v-sub').textContent = `Découper les ordres n'est pas plus avantageux que passer un ordre unique dans ce cas.`;
+    }
+    hideEl('v-gain-zone');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  RENDER — Trading plan
+// ═══════════════════════════════════════════════════════════════
+function renderPlan(strategy) {
+  const { orders, id, label } = strategy;
+
+  $('plan-nb').textContent = orders.length;
+  $('plan-strat-label').textContent = `Stratégie : ${label}`;
+
+  $('orders-list').innerHTML = orders.map((o, i) => {
+    const isReliquat = o.type === 'reliquat';
+    const isOver     = o.type === 'over';
+    const num        = i + 1;
+    const badgeCls   = isReliquat ? 'badge badge-a' : 'badge badge-g';
+    const rowCls     = isOver ? 'order-row row-over' : isReliquat ? 'order-row' : 'order-row';
+    const fraisColor = o.frais <= F_FORFAIT ? 'var(--green)' : 'var(--amber)';
+    const delay      = i * 0.055;
+    const label      = isReliquat ? `Ordre ${num} <span style="font-size:.56rem;opacity:.7;">(Reliquat)</span>` :
+                       isOver     ? `Ordre ${num} <span style="font-size:.56rem;opacity:.7;">(> 500 €)</span>` :
+                                    `Ordre ${num}`;
+    return `
+      <div class="${rowCls}" style="animation-delay:${delay}s;">
+        <span class="${badgeCls}">#${num}</span>
+        <div style="flex:1; min-width:0;">
+          <div style="display:flex; flex-wrap:wrap; align-items:baseline; gap:.4rem .6rem; margin-bottom:.2rem;">
+            <span style="font-size:.85rem; font-weight:700; color:var(--em);">Acheter</span>
+            <span class="mono" style="font-size:.88rem; font-weight:700; color:var(--green);">${o.qte} titre${o.qte>1?'s':''}</span>
+            <span style="font-size:.72rem; color:var(--dim);">à</span>
+            <span class="mono" style="font-size:.82rem; color:var(--em);">${fmtEur(o.prix)}</span>
+          </div>
+          <div style="display:flex; flex-wrap:wrap; gap:.15rem .9rem;">
+            <span style="font-size:.7rem; color:var(--dim);">Montant : <span class="mono" style="color:var(--txt);">${fmtEur(o.montant)}</span></span>
+            <span style="font-size:.7rem; color:var(--dim);">Frais : <span class="mono" style="font-weight:700; color:${fraisColor};">${fmtEur(o.frais)}</span></span>
+            ${isOver ? `<span style="font-size:.62rem; color:var(--amber); opacity:.8;">@ 0,50 %</span>` : ''}
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+
+  // Total
+  const totalMontant = orders.reduce((a, o) => a + o.montant, 0);
+  const totalFrais   = orders.reduce((a, o) => a + o.frais, 0);
+  $('plan-total').innerHTML = `
+    <div style="display:flex; flex-wrap:wrap; gap:.5rem 1.5rem;">
+      <span style="font-size:.72rem; color:var(--dim);">Total investi : <span class="mono" style="color:var(--em); font-weight:600;">${fmtEur(totalMontant)}</span></span>
+      <span style="font-size:.72rem; color:var(--dim);">Total frais : <span class="mono" style="color:var(--green); font-weight:700;">${fmtEur(totalFrais)}</span></span>
+      <span style="font-size:.72rem; color:var(--dim);">Coût tout compris : <span class="mono" style="color:var(--em); font-weight:600;">${fmtEur(totalMontant + totalFrais)}</span></span>
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  JOURNAL — Save
+// ═══════════════════════════════════════════════════════════════
+function saveToJournal() {
+  if (!currentSim) return;
+  const btn = $('btn-save');
+
+  // Prevent duplicate (same id)
+  if (journal.find(e => e.id === currentSim.id)) {
+    btn.textContent = '✓ Déjà enregistré';
+    btn.disabled = true;
+    return;
+  }
+
+  // Ajouter en tête de liste (plus récent en premier)
+  journal.unshift(currentSim);
+
+  // ── SAUVEGARDE PERMANENTE ──────────────────────────────────
+  persistJournal(); // localStorage.setItem('pea_journal', JSON.stringify(journal))
+
+  btn.textContent = '✓ Enregistré dans le Journal !';
+  btn.disabled = true;
+
+  renderJournal();
+  setTimeout(() => $('journal-section').scrollIntoView({ behavior:'smooth', block:'start' }), 200);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  JOURNAL — Render  (lit la variable globale `journal`, pas le localStorage)
+// ═══════════════════════════════════════════════════════════════
+
+function renderJournal() {
+  // Travaille directement sur la variable globale `journal` (déjà en mémoire)
+  const totalSavings = journal.reduce((a, e) => a + (e.gain || 0), 0);
+
+  // Update savings counter
+  $('total-savings').textContent = fmtEur(totalSavings);
+  $('nb-entries-label').textContent = `${journal.length} simulation${journal.length > 1 ? 's' : ''} enregistrée${journal.length > 1 ? 's' : ''}`;
+
+  if (journal.length === 0) {
+    showEl('j-empty');
+    hideEl('j-table-wrap');
+    hideEl('j-footer');
+    return;
+  }
+
+  hideEl('j-empty');
+  showEl('j-table-wrap');
+  showEl('j-footer');
+
+  const pillMap = {
+    unique:    '<span class="pill pill-unique">Unique</span>',
+    standard:  '<span class="pill pill-std">Blocs std</span>',
+    equilibre: '<span class="pill pill-eq">Équilibré</span>',
+  };
+
+  $('j-tbody').innerHTML = journal.map((e, i) => {
+    const gainColor = e.gain > 0 ? 'var(--green)' : 'var(--muted)';
+    const gainStr   = e.gain > 0 ? `<span class="mono" style="color:${gainColor}; font-weight:700;">−${fmtEur(e.gain)}</span>` :
+                                   `<span style="color:var(--muted); font-size:.7rem;">—</span>`;
+    return `
+      <tr style="animation-delay:${i * 0.04}s;">
+        <td><span class="mono" style="font-size:.72rem; color:var(--dim);">${e.date}</span></td>
+        <td><span class="mono" style="font-size:.78rem; color:var(--txt); font-weight:600;">${fmtEur(e.prix)}</span></td>
+        <td><span class="mono" style="font-size:.78rem; color:var(--em); font-weight:700;">${e.qteTotal}</span></td>
+        <td>${pillMap[e.stratId] || `<span class="pill pill-unique">${e.strategie}</span>`}</td>
+        <td><span class="mono" style="font-size:.72rem; color:var(--red);">${fmtEur(e.fraisUnique)}</span></td>
+        <td><span class="mono" style="font-size:.72rem; color:var(--green);">${fmtEur(e.fraisOptimises)}</span></td>
+        <td>${gainStr}</td>
+        <td><button class="btn-del" onclick="deleteEntry(${e.id})" title="Supprimer">🗑</button></td>
+      </tr>`;
+  }).join('');
+}
+
+function deleteEntry(id) {
+  // Muter le tableau global, puis persister
+  journal = journal.filter(e => e.id !== id);
+  persistJournal(); // localStorage.setItem('pea_journal', JSON.stringify(journal))
+  renderJournal();
+  // Ré-activer le bouton "Enregistrer" si l'entrée supprimée était la simulation en cours
+  if (currentSim && currentSim.id === id) {
+    const btn = $('btn-save');
+    btn.textContent = '💾 \u00a0Enregistrer dans le Journal';
+    btn.disabled = false;
+  }
+}
+
+function clearJournal() {
+  if (!confirm('Effacer tout le journal de trading ?')) return;
+  // Vider le tableau global et persister
+  journal = [];
+  persistJournal(); // localStorage.setItem('pea_journal', JSON.stringify([]))
+  renderJournal();
+  const btn = $('btn-save');
+  if (btn && currentSim) {
+    btn.textContent = '💾 \u00a0Enregistrer dans le Journal';
+    btn.disabled = false;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  KEYBOARD SHORTCUT
+// ═══════════════════════════════════════════════════════════════
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') calculate();
+});
+
+// ═══════════════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════════════
+renderJournal();
+</script>
+</body>
+</html>
